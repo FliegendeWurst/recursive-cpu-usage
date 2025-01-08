@@ -36,24 +36,27 @@ fn real_main() -> Result<(usize, u64), ProcError> {
 		};
 		total_sched.insert(p.pid, s.utime + s.stime);
 	}
-	std::thread::sleep(Duration::from_millis(TIME_TO_MEASURE));
-	let end = Instant::now();
-	let mut total_sched_2 = HashMap::new();
-	for pid in &all_pids {
-		let Ok(p) = Process::new(*pid) else {
-			continue;
-		};
-		let Ok(s) = p.stat() else {
-			continue;
-		};
-		total_sched_2.insert(p.pid, s.utime + s.stime);
-	}
 	let mut total = 0;
-	for (pid, total1) in total_sched {
-		if let Some(total2) = total_sched_2.get(&pid) {
-			total += total2 - total1;
+	for _ in 0..4 {
+		std::thread::sleep(Duration::from_millis(TIME_TO_MEASURE / 4));
+		let mut total_sched_2 = HashMap::new();
+		for pid in &all_pids {
+			let Ok(p) = Process::new(*pid) else {
+				continue;
+			};
+			let Ok(s) = p.stat() else {
+				continue;
+			};
+			total_sched_2.insert(p.pid, s.utime + s.stime);
 		}
+		for (pid, total1) in total_sched {
+			if let Some(total2) = total_sched_2.get(&pid) {
+				total += total2 - total1;
+			}
+		}
+		total_sched = total_sched_2;
 	}
+	let end = Instant::now();
 	Ok((end.duration_since(start).as_millis() as _, total))
 }
 
