@@ -1,0 +1,10 @@
+[package]
+name = "recursive-cpu-usage"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+authors = ["FliegendeWurst <arne.keller@posteo.de>"]
+
+[dependencies]
+libc = "0.2.169"
+procfs = { version = "0.17.0", default-features = false }
